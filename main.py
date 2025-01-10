@@ -10,10 +10,10 @@ class SystemMonitor:
         self.root.title("Системный монитор")
 
         self.menu = tk.Menu(self.root)
-        self.podmenu = tk.Menu(self.menu, tearoff=0)
-        self.podmenu.add_command(label="Создать csv файл по имеющимся данным", command=create_scvfile)
-        self.podmenu.add_command(label="Очистить имеющиеся данные", command=clear_db)
-        self.menu.add_cascade(label="Файл", menu=self.podmenu)
+        self.pod_menu = tk.Menu(self.menu, tearoff=0)
+        self.pod_menu.add_command(label="Создать csv файл по имеющимся данным", command=create_csv_file)
+        self.pod_menu.add_command(label="Очистить имеющиеся данные", command=clear_db)
+        self.menu.add_cascade(label="Файл", menu=self.pod_menu)
 
         self.cpu_label = tk.Label(root, text="Загрузка ЦП: 0%", font=("Helvetica", 16))
         self.cpu_label.pack(pady=10)
@@ -74,12 +74,12 @@ class SystemMonitor:
 
         self.start_write.pack(pady=10)
 
-def create_scvfile():
+def create_csv_file():
     conn = sqlite3.connect('data.db')
     print("CREATE CSV FILE")
     df = pd.read_sql_query("SELECT * FROM data_usage", conn)
     date_time =  datetime.now().strftime("%S/%M/%H/%d/%m/%Y")
-    df.to_csv(f'выгрузка_загруженyости_{date_time}.csv', index=False)
+    df.to_csv(f'выгрузка_загруженности_{date_time}.csv', index=False)
     conn.close()
 
 def clear_db():
