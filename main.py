@@ -2,6 +2,7 @@ import tkinter as tk
 import psutil
 import sqlite3
 import pandas as pd
+from datetime import datetime
 
 class SystemMonitor:
     def __init__(self, root):
@@ -9,9 +10,10 @@ class SystemMonitor:
         self.root.title("Системный монитор")
 
         self.menu = tk.Menu(self.root)
-        podmenu = tk.Menu(self.menu, tearoff=0)
-        podmenu.add_command(label="Создать csv файл по имеющимся данным", command=self.create_scvfile)
-        podmenu.add_command(label="Очистить имеющиеся данные", command=self.clear_db)
+        self.podmenu = tk.Menu(self.menu, tearoff=0)
+        self.podmenu.add_command(label="Создать csv файл по имеющимся данным", command=create_scvfile)
+        self.podmenu.add_command(label="Очистить имеющиеся данные", command=clear_db)
+        self.menu.add_cascade(label="Файл", menu=self.podmenu)
 
         self.cpu_label = tk.Label(root, text="Загрузка ЦП: 0%", font=("Helvetica", 16))
         self.cpu_label.pack(pady=10)
@@ -33,6 +35,8 @@ class SystemMonitor:
 
         self.stop_button = None
         self.after_id = None
+
+        self.root.config(menu=self.menu)
 
     def update_and_save_metrics(self):
         time_interval = self.time_interval_entry.get()
@@ -70,18 +74,20 @@ class SystemMonitor:
 
         self.start_write.pack(pady=10)
 
-    def create_scvfile(self):
-        conn = sqlite3.connect('data.db')
+def create_scvfile():
+    conn = sqlite3.connect('data.db')
+    print("CREATE CSV FILE")
+    df = pd.read_sql_query("SELECT * FROM data_usage", conn)
+    date_time =  datetime.now().strftime("%S/%M/%H/%d/%m/%Y")
+    df.to_csv(f'выгрузка_загруженyости_{date_time}.csv', index=False)
+    conn.close()
 
-        df = pd.read_sql_query("SELECT * FROM data", conn)
-        df.to_csv('выгрузка_загружжености.csv', index=False)
-        conn.close()
-
-    def clear_db(self):
-        conn = sqlite3.connect('data.db')
-        cursor = conn.cursor()
-        cursor.execute("DROP TABLE IF EXISTS data_usage")
-        conn.close()
+def clear_db():
+    conn = sqlite3.connect('data.db')
+    print("CLEAR DB")
+    cursor = conn.cursor()
+    cursor.execute("DROP TABLE IF EXISTS data_usage")
+    conn.close()
 
 def save_metrics(cpu, ram, disk):
     conn = sqlite3.connect('data.db')
